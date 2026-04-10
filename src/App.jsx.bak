@@ -1,0 +1,579 @@
+import { useState } from "react";
+
+// ── 顏色 ──────────────────────────────────────────
+const C = {
+  us:  "#00d4ff",
+  e1:  "#ff6b35",
+  e2:  "#a855f7",
+  e3:  "#22c55e",
+  e4:  "#f59e0b",
+  e5:  "#ec4899",
+};
+
+// ── 主層資料 ──────────────────────────────────────
+const LAYERS = [
+  {
+    id:"us", color:C.us, icon:"🇺🇸",
+    label:"美股 AI 龍頭", sub:"驅動全球AI資本支出",
+    companies:[
+      {n:"NVIDIA",    t:"NVDA",  r:"GPU/AI晶片王者",    f:"🔥"},
+      {n:"Microsoft", t:"MSFT",  r:"Azure/OpenAI",      f:"☁️"},
+      {n:"Google",    t:"GOOGL", r:"GCP/TPU/Gemini",    f:"🔍"},
+      {n:"Amazon",    t:"AMZN",  r:"AWS/Trainium",      f:"📦"},
+      {n:"Meta",      t:"META",  r:"AI研究/LLaMA",      f:"🌐"},
+      {n:"AMD",       t:"AMD",   r:"GPU/CPU競爭",       f:"⚡"},
+      {n:"Oracle",    t:"ORCL",  r:"雲端資料中心",      f:"🏛️"},
+      {n:"Broadcom",  t:"AVGO",  r:"ASIC/網路晶片",     f:"🔧"},
+    ],
+    deep: null,
+  },
+  {
+    id:"e1", color:C.e1, icon:"⚡", cake:"第一層",
+    label:"能源 Energy", sub:"即時智慧需要即時電力",
+    desc:"每個Token都是電子流動的結果，能源是AI的第一性原理",
+    companies:[
+      {n:"台達電",   t:"2308", r:"電源/UPS/BBU全端解決",  f:"🔋"},
+      {n:"光寶科",   t:"2301", r:"電源模組",              f:"💡"},
+      {n:"順達",     t:"3211", r:"BBU/AWS.Google供應鏈",  f:"🔌"},
+      {n:"新盛力",   t:"4931", r:"BBU/Meta高壓認證",      f:"⚡"},
+      {n:"中興電",   t:"1513", r:"重電/變壓器",           f:"🏭"},
+      {n:"華城",     t:"1519", r:"重電設備",              f:"🔧"},
+      {n:"士林電機", t:"1503", r:"配電設備",              f:"⚙️"},
+    ],
+    deep: {
+      title:"🔋 深挖：電力基礎建設材料",
+      color:C.e1,
+      groups:[
+        {
+          label:"銅線纜/導體",
+          note:"AI資料中心用銅量是傳統DC 4-5倍",
+          items:[
+            {n:"華新麗華",t:"1605",r:"電線電纜龍頭"},
+            {n:"大亞電線",t:"1609",r:"電線電纜"},
+            {n:"合機",    t:"1618",r:"電機銅材"},
+          ],
+        },
+        {
+          label:"UPS/儲能模組",
+          note:"超大規模資料中心須備援電力",
+          items:[
+            {n:"台達電",t:"2308",r:"UPS/BBU龍頭"},
+            {n:"飛宏",  t:"2457",r:"充電/電源模組"},
+            {n:"碩天",  t:"3617",r:"UPS不斷電系統"},
+          ],
+        },
+        {
+          label:"HVDC高壓直流",
+          note:"Rubin Ultra功耗達600kW，逼近HVDC架構",
+          items:[
+            {n:"台達電",t:"2308",r:"HVDC Power Rack研發"},
+            {n:"新盛力",t:"4931",r:"BBU+HVDC轉換"},
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id:"e2", color:C.e2, icon:"💎", cake:"第二層",
+    label:"晶片 Chips", sub:"將電力轉化為算力",
+    desc:"HBM+高速互連決定智慧成本，NVIDIA晶片面積每代+70%",
+    companies:[
+      {n:"台積電",   t:"2330", r:"3/5nm CoWoS封裝龍頭",   f:"👑"},
+      {n:"聯發科",   t:"2454", r:"AI IC設計/ASIC",        f:"🧠"},
+      {n:"世芯-KY",  t:"3661", r:"客製化ASIC設計",        f:"🎯"},
+      {n:"創意電子", t:"3443", r:"ASIC/IP設計服務",       f:"✏️"},
+      {n:"日月光",   t:"3711", r:"先進封裝SiP/CoWoS外包", f:"📦"},
+      {n:"信驊",     t:"5274", r:"BMC管理晶片80%壟斷",    f:"🔐"},
+      {n:"京元電",   t:"2449", r:"晶片測試/封測",         f:"🔬"},
+    ],
+    deep: {
+      title:"🧪 深挖：晶片製造關鍵材料",
+      color:C.e2,
+      groups:[
+        {
+          label:"🎯 靶材（Sputtering Target）",
+          note:"奈米製程每片晶圓靶材耗量倍增，2nm需求量為7nm的3倍以上",
+          items:[
+            {n:"光洋科",t:"1785",r:"鈦/鉭/銅合金靶材，台積電2nm主力供應商"},
+            {n:"崇越",  t:"5434",r:"半導體材料代理/靶材"},
+            {n:"中砂",  t:"1560",r:"CMP鑽石碟，台積電3nm切入主力供應商"},
+          ],
+        },
+        {
+          label:"🧴 特用化學品/光阻劑",
+          note:"先進製程用量隨層數倍增，2nm光阻規格極嚴苛",
+          items:[
+            {n:"新應材",t:"4739",r:"2nm特用化學龍頭"},
+            {n:"長興",  t:"1717",r:"ABF絕緣樹脂/電子材料"},
+            {n:"崇越",  t:"5434",r:"半導體耗材代理"},
+            {n:"勝一",  t:"1773",r:"半導體清洗化學品"},
+          ],
+        },
+        {
+          label:"🔩 CMP研磨液/清洗製程",
+          note:"CoWoS先進封裝增加CMP步驟，耗材需求暴增",
+          items:[
+            {n:"辛耘",t:"3583",r:"濕製程設備/CMP，CoWoS供應鏈"},
+            {n:"弘塑",t:"3131",r:"電鍍/清洗/去膠設備"},
+          ],
+        },
+        {
+          label:"💎 半導體製程氣體/惰性環境",
+          note:"ASML設備旁需惰性環境保護良率",
+          items:[
+            {n:"華景電",   t:"6788",r:"設備外加惰性氣體環境"},
+            {n:"竹陞科技", t:"6739",r:"機台外加設備"},
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id:"e3", color:C.e3, icon:"🏭", cake:"第三層",
+    label:"基礎設施 Infrastructure", sub:"AI工廠：製造智慧，不是儲存資訊",
+    desc:"CoWoS 2026年底月產能7.5萬片，年增100%；T-Glass玻纖布全球供應吃緊",
+    subs:[
+      {
+        label:"🖥️ 伺服器ODM",
+        companies:[
+          {n:"鴻海",  t:"2317",r:"AI機架伺服器/GB300",    f:"🏢"},
+          {n:"廣達",  t:"2382",r:"Google最大AI伺服器代工", f:"💻"},
+          {n:"緯創",  t:"3231",r:"AI伺服器擴廠",          f:"🖥️"},
+          {n:"緯穎",  t:"6669",r:"100%雲端伺服器",        f:"☁️"},
+          {n:"英業達",t:"2356",r:"AI伺服器ODM",           f:"⚙️"},
+          {n:"技嘉",  t:"2376",r:"GPU伺服器/主機板",      f:"🎮"},
+        ],
+      },
+      {
+        label:"❄️ 散熱系統",
+        companies:[
+          {n:"奇鋐",t:"3017",r:"液冷龍頭，MCCP共研NVIDIA",f:"🧊"},
+          {n:"雙鴻",t:"3324",r:"液冷，訂單到2027年",      f:"💧"},
+          {n:"建準",t:"2421",r:"散熱風扇",                f:"🌀"},
+        ],
+      },
+      {
+        label:"🌐 網路/光通訊",
+        companies:[
+          {n:"智邦",  t:"2345",r:"800G交換器",           f:"🔗"},
+          {n:"波若威",t:"3163",r:"矽光子/NVIDIA GTC點名", f:"✨"},
+          {n:"聯亞",  t:"3081",r:"CPO/磷化銦材料",       f:"🔦"},
+          {n:"光聖",  t:"6442",r:"800G光通訊模組",       f:"💫"},
+          {n:"華星光",t:"6550",r:"打入CSP光模組",        f:"🌟"},
+          {n:"上詮",  t:"3363",r:"光纖連接器",           f:"🔌"},
+        ],
+      },
+    ],
+    deep: {
+      title:"📐 深挖：高階PCB材料 × 玻璃基板革命",
+      color:C.e3,
+      groups:[
+        {
+          label:"T-Glass 高階玻纖布（全球瓶頸）",
+          note:"⚠️ 2026年最大供應缺口！ABF載板必備，全球產能極度吃緊，載板廠漲價強力支撐",
+          items:[
+            {n:"南亞",  t:"1303",r:"CCL+玻纖布+南電ABF三重受惠"},
+            {n:"台玻",  t:"1802",r:"玻纖布/電子級玻璃"},
+          ],
+        },
+        {
+          label:"CCL 銅箔基板（AI伺服器M7-M9等級）",
+          note:"高階CCL全球極度緊俏，台光電台燿訂單接不完",
+          items:[
+            {n:"台光電",t:"2383",r:"M7-M9高階CCL，AI伺服器標配"},
+            {n:"台燿",  t:"6274",r:"高頻高速CCL"},
+            {n:"南亞",  t:"1303",r:"CCL+銅箔+玻纖布垂直整合"},
+          ],
+        },
+        {
+          label:"高階樹脂/特用化學（上游的上游）",
+          note:"國精化HC材擴產提前一年，2026年產能衝3倍，毛利率從15%→24%",
+          items:[
+            {n:"國精化",t:"4722",r:"HC材/PSMA特用樹脂，M7+台光電客戶"},
+            {n:"長興",  t:"1717",r:"ABF絕緣膜樹脂/電子材料"},
+            {n:"新應材",t:"4739",r:"2nm特用化學/介電材料"},
+          ],
+        },
+        {
+          label:"玻璃基板（次世代封裝革命）",
+          note:"比ABF更平整低翹曲，支援超大面積Chiplet，2027後爆發",
+          items:[
+            {n:"欣興",t:"3037",r:"玻璃基板研發台廠第一，2026良率目標85%"},
+            {n:"南電",t:"8046",r:"T-Glass穩定供給，玻璃基板研發中"},
+            {n:"辛耘",t:"3583",r:"玻璃基板濕製程設備，2026滿載至2027"},
+          ],
+        },
+        {
+          label:"高階 ABF 載板",
+          note:"AI GPU面積每代+70%，層數16層→20層+，需求面積暴增",
+          items:[
+            {n:"欣興",    t:"3037",r:"ABF全球一梯隊，NVIDIA/Apple核心"},
+            {n:"南電",    t:"8046",r:"800G網通ABF，稼動率85-90%"},
+            {n:"景碩",    t:"3189",r:"BT載板/ABF轉型"},
+            {n:"臻鼎-KY", t:"4958",r:"500億資本支出，10個廠動工"},
+            {n:"華通",    t:"2313",r:"SpaceX最大PCB供應商，AI+衛星雙題材"},
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id:"e4", color:C.e4, icon:"🤖", cake:"第四層",
+    label:"模型 Models", sub:"語言/生物/化學/物理模擬/機器人",
+    desc:"語言模型只是冰山一角，蛋白質AI、物理模擬才是下一波爆發",
+    companies:[
+      {n:"研華",  t:"2395",r:"工業AI/邊緣運算",  f:"🏭"},
+      {n:"宜鼎",  t:"5289",r:"工控記憶體/AI儲存", f:"💾"},
+      {n:"群聯",  t:"8299",r:"NAND Flash控制/SSD",f:"💿"},
+      {n:"智原",  t:"3035",r:"FPGA/AI加速IP",    f:"⚡"},
+      {n:"南亞科",t:"2408",r:"DDR5/HBM記憶體",   f:"🧠"},
+      {n:"華邦電",t:"2344",r:"Flash記憶體",       f:"📱"},
+    ],
+    deep: {
+      title:"🧠 深挖：HBM記憶體 & 先進封裝設備",
+      color:C.e4,
+      groups:[
+        {
+          label:"HBM 高頻寬記憶體供應鏈",
+          note:"H100→B200 HBM用量從6顆→12顆，每顆面積+50%",
+          items:[
+            {n:"南亞科",t:"2408",r:"DDR5/HBM研發，台廠唯一"},
+            {n:"欣興",  t:"3037",r:"HBM載板，技術最高門檻"},
+          ],
+        },
+        {
+          label:"CoWoS 先進封裝設備",
+          note:"台積電CoWoS 2022-2026年CAGR達50%，設備商訂單能見度兩年",
+          items:[
+            {n:"辛耘",  t:"3583",r:"濕製程設備，2026產能滿載至2027"},
+            {n:"弘塑",  t:"3131",r:"電鍍清洗CoWoS核心設備"},
+            {n:"萬潤",  t:"6187",r:"CoWoS揀晶設備"},
+            {n:"中砂",  t:"1560",r:"CMP鑽石碟研磨工具"},
+            {n:"家登",  t:"3680",r:"EUV光罩盒/CoWoS關鍵零組件"},
+          ],
+        },
+        {
+          label:"晶圓測試/再生晶圓",
+          note:"先進製程測試晶圓需求倍增",
+          items:[
+            {n:"昇陽半",t:"8028",r:"再生晶圓製造"},
+            {n:"致茂",  t:"2360",r:"測試機台"},
+            {n:"鴻勁",  t:"7769",r:"半導體測試機台"},
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id:"e5", color:C.e5, icon:"🚀", cake:"第五層",
+    label:"應用 Applications", sub:"經濟價值落地之處",
+    desc:"藥物研發、工業機器人、自動駕駛、AI PC——技術轉化為真實價值",
+    companies:[
+      {n:"上銀",  t:"2049",r:"工業機器人/精密模組", f:"🤖"},
+      {n:"樺漢",  t:"6414",r:"邊緣AI控制器",        f:"📟"},
+      {n:"華碩",  t:"2357",r:"AI PC/AI裝置",        f:"💻"},
+      {n:"宏碁",  t:"2353",r:"AI PC消費端",         f:"🖥️"},
+      {n:"所羅門",t:"2359",r:"工業視覺AI",          f:"👁️"},
+      {n:"研華",  t:"2395",r:"工業電腦/AIoT",       f:"🏭"},
+    ],
+    deep: {
+      title:"🤖 深挖：AI機器人 & 物理AI週邊",
+      color:C.e5,
+      groups:[
+        {
+          label:"人形機器人零組件",
+          note:"黃仁勳：5年內人形機器人大規模生產，Physical AI下一波爆發",
+          items:[
+            {n:"上銀",  t:"2049",r:"線性滑軌/機器人關節"},
+            {n:"台達電",t:"2308",r:"工業自動化/馬達驅動"},
+            {n:"和椿",  t:"6215",r:"機器人傳動元件"},
+            {n:"穎漢",  t:"4562",r:"機器人精密零件"},
+            {n:"所羅門",t:"2359",r:"工業視覺AI系統"},
+          ],
+        },
+        {
+          label:"矽光子/CPO（2026商轉元年）",
+          note:"NVIDIA定調2026矽光子商轉元年，CPO 2025-2029 CAGR 100%",
+          items:[
+            {n:"波若威",t:"3163",r:"NVIDIA GTC點名，矽光子模組"},
+            {n:"聯亞",  t:"3081",r:"磷化銦/CPO材料"},
+            {n:"光聖",  t:"6442",r:"800G光模組，CSP客戶"},
+            {n:"華星光",t:"6550",r:"打入Google/AWS供應鏈"},
+            {n:"達發",  t:"6526",r:"聯發科子公司100G SerDes晶片"},
+          ],
+        },
+        {
+          label:"AI PC / 端側推論",
+          note:"AI推論從雲端→邊緣，端側NPU晶片需求起飛",
+          items:[
+            {n:"華碩",t:"2357",r:"AI PC硬體平台"},
+            {n:"宏碁",t:"2353",r:"AI PC消費端"},
+            {n:"緯創",t:"3231",r:"AI NB代工"},
+            {n:"仁寶",t:"2324",r:"NB代工/AI終端"},
+          ],
+        },
+      ],
+    },
+  },
+];
+
+// ── 子元件 ────────────────────────────────────────
+function Tag({ color, children }) {
+  return (
+    <span style={{
+      background:`${color}18`, border:`1px solid ${color}50`,
+      color, fontSize:9, padding:"2px 7px", borderRadius:20,
+      letterSpacing:1, fontFamily:"'Courier New',monospace",
+    }}>
+      {children}
+    </span>
+  );
+}
+
+function Card({ item, color, compact }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: hov ? "rgba(0,0,0,0.75)" : "rgba(0,0,0,0.45)",
+        border: `1px solid ${hov ? color + "cc" : color + "35"}`,
+        borderRadius: 8,
+        padding: compact ? "5px 9px" : "9px 12px",
+        minWidth: compact ? 100 : 120,
+        cursor: "default",
+        transform: hov ? "translateY(-2px)" : "none",
+        boxShadow: hov ? `0 4px 18px ${color}28` : "none",
+        transition: "all 0.18s",
+      }}
+    >
+      <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+        {item.f && <span style={{ fontSize: compact ? 13 : 15 }}>{item.f}</span>}
+        <div>
+          <div style={{ color:"#fff", fontWeight:700, fontSize: compact ? 11 : 12, fontFamily:"'Courier New',monospace" }}>
+            {item.n}
+          </div>
+          <div style={{ color, fontSize:10, fontWeight:600 }}>{item.t}</div>
+        </div>
+      </div>
+      {!compact && item.r && (
+        <div style={{ color:"#999", fontSize:10, marginTop:4, lineHeight:1.4 }}>{item.r}</div>
+      )}
+    </div>
+  );
+}
+
+function DeepPanel({ deep, isOpen }) {
+  if (!isOpen || !deep) return null;
+  return (
+    <div style={{
+      marginTop: 12,
+      padding: "14px 16px",
+      background: "rgba(0,0,0,0.35)",
+      border: `1px dashed ${deep.color}50`,
+      borderRadius: 10,
+      animation: "fadeIn 0.3s ease",
+    }}>
+      <div style={{ color:deep.color, fontSize:12, fontWeight:700, marginBottom:12, letterSpacing:0.5 }}>
+        {deep.title}
+      </div>
+      {deep.groups.map((g, i) => (
+        <div key={i} style={{ marginBottom:14 }}>
+          <div style={{ display:"flex", alignItems:"flex-start", gap:8, marginBottom:6, flexWrap:"wrap" }}>
+            <span style={{ color:"#ccc", fontSize:11, fontWeight:700 }}>{g.label}</span>
+            {g.note && (
+              <span style={{
+                color:"#888", fontSize:10, fontStyle:"italic",
+                background:"rgba(255,200,0,0.07)",
+                border:"1px solid rgba(255,200,0,0.15)",
+                borderRadius:4, padding:"1px 6px",
+              }}>
+                💡 {g.note}
+              </span>
+            )}
+          </div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+            {g.items.map((c, j) => (
+              <div key={j} style={{
+                background:`${deep.color}10`,
+                border:`1px solid ${deep.color}35`,
+                borderRadius:7, padding:"5px 10px",
+              }}>
+                <span style={{ color:"#fff", fontWeight:700, fontSize:11, fontFamily:"'Courier New',monospace" }}>{c.n}</span>
+                <span style={{ color:deep.color, marginLeft:5, fontSize:10 }}>{c.t}</span>
+                {c.r && <div style={{ color:"#888", fontSize:10, marginTop:2 }}>{c.r}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── 主組件 ────────────────────────────────────────
+export default function App() {
+  const [expanded, setExpanded] = useState({ e3: true });
+  const [deepOpen, setDeepOpen] = useState({});
+
+  const toggleExpand = id => setExpanded(p => ({ ...p, [id]: !p[id] }));
+  const toggleDeep   = id => setDeepOpen(p => ({ ...p, [id]: !p[id] }));
+
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: "#050b18",
+      color: "#fff",
+      fontFamily: "Georgia, serif",
+      padding: "20px 14px 40px",
+      backgroundImage:`
+        radial-gradient(ellipse at 15% 5%, rgba(0,212,255,0.06) 0%,transparent 45%),
+        radial-gradient(ellipse at 85% 95%, rgba(168,85,247,0.06) 0%,transparent 45%),
+        linear-gradient(rgba(0,212,255,0.025) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(0,212,255,0.025) 1px,transparent 1px)
+      `,
+      backgroundSize: "100% 100%,100% 100%,44px 44px,44px 44px",
+    }}>
+      {/* Header */}
+      <div style={{ textAlign:"center", marginBottom:28 }}>
+        <div style={{ color:"#00d4ff", fontSize:10, letterSpacing:6, fontFamily:"'Courier New',monospace", marginBottom:6 }}>
+          NVIDIA GTC 2025 ✦ JENSEN HUANG'S FIVE-LAYER CAKE
+        </div>
+        <h1 style={{
+          fontSize:"clamp(18px,4vw,30px)", fontWeight:900, margin:0,
+          background:"linear-gradient(135deg,#00d4ff 0%,#a855f7 50%,#ec4899 100%)",
+          WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
+          backgroundClip:"text",
+        }}>
+          AI供應鏈深度地圖 × 五層蛋糕理論
+        </h1>
+        <p style={{ color:"#555", fontSize:12, marginTop:6, fontFamily:"'Courier New',monospace" }}>
+          美股驅動 → 五層蛋糕 → 台股受惠　｜　點擊「🔬深挖」展開上游原物料週邊
+        </p>
+      </div>
+
+      <div style={{ maxWidth:1000, margin:"0 auto" }}>
+        {LAYERS.map((layer, idx) => {
+          const open  = !!expanded[layer.id];
+          const dOpen = !!deepOpen[layer.id];
+
+          return (
+            <div key={layer.id}>
+              {/* Arrow connector */}
+              {idx > 0 && (
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"center", margin:"3px 0" }}>
+                  <div style={{ width:2, height:18, background:`linear-gradient(to bottom,${LAYERS[idx-1].color}60,${layer.color})` }} />
+                  <div style={{ width:0, height:0, borderLeft:"5px solid transparent", borderRight:"5px solid transparent", borderTop:`9px solid ${layer.color}` }} />
+                </div>
+              )}
+
+              {/* Layer card */}
+              <div style={{
+                background:`${layer.color}07`,
+                border:`1px solid ${layer.color}40`,
+                borderRadius:14,
+                padding:"14px 16px",
+              }}>
+                {/* Header */}
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:10, flexWrap:"wrap" }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+                      <h2 style={{ margin:0, fontSize:"clamp(13px,3vw,16px)", fontWeight:800, color:layer.color }}>
+                        {layer.icon} {layer.label}
+                      </h2>
+                      {layer.cake && <Tag color={layer.color}>{layer.cake}</Tag>}
+                    </div>
+                    <div style={{ color:"#777", fontSize:11, marginTop:2, fontFamily:"'Courier New',monospace" }}>{layer.sub}</div>
+                    {layer.desc && (
+                      <div style={{ color:"#555", fontSize:10, marginTop:3, fontStyle:"italic" }}>「{layer.desc}」</div>
+                    )}
+                  </div>
+                  <div style={{ display:"flex", gap:8, alignItems:"center", flexShrink:0 }}>
+                    {layer.deep && (
+                      <button
+                        onClick={() => toggleDeep(layer.id)}
+                        style={{
+                          background: dOpen ? `${layer.color}25` : "rgba(255,255,255,0.05)",
+                          border: `1px solid ${layer.color}60`,
+                          color: layer.color, fontSize:11, padding:"4px 12px",
+                          borderRadius:20, cursor:"pointer", letterSpacing:0.5,
+                          transition:"all 0.2s",
+                        }}
+                      >
+                        🔬 深挖 {dOpen ? "▲" : "▼"}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => toggleExpand(layer.id)}
+                      style={{
+                        background:"rgba(255,255,255,0.04)",
+                        border:"1px solid rgba(255,255,255,0.15)",
+                        color:"#aaa", fontSize:11, padding:"4px 12px",
+                        borderRadius:20, cursor:"pointer",
+                      }}
+                    >
+                      {open ? "收合" : "展開"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Companies */}
+                {layer.subs ? (
+                  <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                    {layer.subs.map(s => (
+                      <div key={s.label}>
+                        <div style={{ color:layer.color, fontSize:10, letterSpacing:2, marginBottom:6, fontFamily:"'Courier New',monospace", opacity:0.8 }}>
+                          {s.label}
+                        </div>
+                        <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+                          {s.companies.map(c => <Card key={c.t+c.n} item={c} color={layer.color} compact={!open} />)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+                    {layer.companies.map(c => <Card key={c.t+c.n} item={c} color={layer.color} compact={!open} />)}
+                  </div>
+                )}
+
+                {/* Deep panel */}
+                <DeepPanel deep={layer.deep} isOpen={dOpen} />
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Footer */}
+        <div style={{
+          marginTop:28, padding:"14px 18px",
+          background:"rgba(255,255,255,0.02)",
+          border:"1px solid rgba(255,255,255,0.07)",
+          borderRadius:12,
+        }}>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:16 }}>
+            <div style={{ flex:1, minWidth:180 }}>
+              <div style={{ color:"#00d4ff", fontSize:11, marginBottom:3 }}>📊 資料來源</div>
+              <div style={{ color:"#444", fontSize:10, lineHeight:1.6 }}>
+                國泰投信・玉山投顧・理財周刊・財報狗・數位時代・iThome・TechNews（2025–2026）
+              </div>
+            </div>
+            <div style={{ flex:1, minWidth:180 }}>
+              <div style={{ color:"#f59e0b", fontSize:11, marginBottom:3 }}>⚠️ 免責聲明</div>
+              <div style={{ color:"#444", fontSize:10, lineHeight:1.6 }}>
+                本圖僅供教育研究參考，不構成任何投資建議。投資有風險，請自行評估。
+              </div>
+            </div>
+            <div style={{ flex:1, minWidth:180 }}>
+              <div style={{ color:"#22c55e", fontSize:11, marginBottom:3 }}>💡 操作說明</div>
+              <div style={{ color:"#444", fontSize:10, lineHeight:1.6 }}>
+                點「🔬深挖」展開原物料週邊 ｜ 點「展開/收合」切換公司詳情
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
